@@ -1,5 +1,4 @@
-# SSH
-Secure Shell
+# SSH - Secure Shell
 
 ## Generate SSH Key on Client side
 - Install Open SSH to generate RSA pub and pri key pair  
@@ -65,3 +64,45 @@ Secure Shell
         AddKeysToAgent yes
         IdentityFile ~/.ssh/{ssh-key-name}
     ```
+
+## Secure Remote Command Execution
+```bash
+$ ssh root@10.193.32.55 'echo $HOSTNAME'
+# OR
+$ ssh dev 'echo $HOSTNAME'
+
+clarisights-dev
+```
+
+## Secure File Transfer
+```bash
+$ scp dump.js dev:/root/dev/
+# OR
+$ scp dump.js root@10.193.32.55:/root/dev/
+
+dump.js                 100%   66   151.3KB/s   00:00    
+```
+When transmitted by scp, the file is automatically encrypted as it leaves client machine and decrypted as it arrives on server machine.
+
+## SSH Agent
+1. In advance (and only once), place special files called public key files into your
+remote computer accounts. These enable your SSH clients (ssh, scp) to access
+your remote accounts.
+2. On your local machine, invoke the ssh-agent program, which runs in the
+background.
+3. Choose the key (or keys) you will need during your login session.
+4. Load the keys into the agent with the ssh-add program. This requires knowl-
+edge of each key’s secret passphrase.
+5. You have an ssh-agent program running on your local machine, holding your secret keys in memory. You’re now done. You have password-less access to all your remote accounts that contain your public key files.
+
+## Port Forwarding
+SSH can increase the security of other TCP/IP-based applications such as telnet, ftp, and the X Window System. A technique called `port forwarding` or `tunneling` reroutes a TCP/IP connection to pass through an SSH connection, transparently encrypting it end-to-end. Port forwarding can also pass such applications through network firewalls that otherwise prevent their use.
+```
+$ ssh -L 3002:localhost:119 news.yoyodyne.com
+```
+This says “ssh, please establish a secure connection from TCP port 3002 on my local machine to TCP port 119, the news port, on news.yoyodyne.com.”
+
+Configure your news-reading program to connect to port 3002 on your local machine. The secure tunnel created by ssh automatically communicates with the news server on news.yoyodyne.com, and the news traffic passing through the tunnel is protected by encryption.
+
+## Firewalls
+A firewall is a hardware device or software program that prevents certain data from entering or exiting a network. For example, a firewall placed between a web site and the Internet might permit only HTTP and HTTPS traffic to reach the site. As another example, a firewall can reject all TCP/IP packets unless they originate from a designated set of network addresses.
