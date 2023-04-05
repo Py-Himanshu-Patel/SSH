@@ -205,3 +205,31 @@ Before you can use public-key authentication, some setup is required:
 In the preceding example, the remote instance of scp has no direct access to your private key, since the agent is running on the local host, not the remote. SSH provides agent forwarding to address this problem.
 
 When agent forwarding is turned on the remote SSH server masquerades as a second ssh-agent as shown in Figure 2-4. It takes authentication requests from
+
+![Agent Forwading](images/agent-forwarding.png)
+
+```
+Local Machine -> Remote Server -> Github
+```
+It works like this: you ask your remote server to pull some code from Github, and Github says “who are you?” to the server. Usually the server would consult its own `id_rsa` files to answer, but instead it will forward the question to your local machine. Your local machine answers the question and sends the response (which does not include your private key) to the server, which forwards it back to Github. Github doesn’t care that your local machine answered the question, it just sees that it’s been answered, and lets you connect.
+
+### How to Enable SSH Agent Forwarding
+
+- Add Keys to ssh-agent
+    ```
+    ssh-add ~/.ssh/id_rsa
+    ```
+- List the keys in agent and see if the key is added
+    ```
+    ssh-add -L
+    ```
+- Allow Forwarding in Your Client’s Config. Open file `~/.ssh/config` on local machine and make a new rule for remote server.
+    ```
+    Host example
+    ForwardAgent yes
+    ```
+    Depending on your operating system, you may also have SSH config files at `/etc/ssh/ssh_config` for macOS or `/etc/ssh_config` for Ubuntu. These files may override the user config file at `~/.ssh/config`, so make sure nothing is conflicting.
+- Test Agent forwarding from remote server.
+    ```
+    ssh git@github.com
+    ```
