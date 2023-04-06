@@ -143,12 +143,49 @@ background.
 
 ## Port Forwarding
 SSH can increase the security of other TCP/IP-based applications such as telnet, ftp, and the X Window System. A technique called `port forwarding` or `tunneling` reroutes a TCP/IP connection to pass through an SSH connection, transparently encrypting it end-to-end. Port forwarding can also pass such applications through network firewalls that otherwise prevent their use.
-```
-$ ssh -L 3002:localhost:119 news.yoyodyne.com
-```
-This says “ssh, please establish a secure connection from TCP port 3002 on my local machine to TCP port 119, the news port, on news.yoyodyne.com.”
 
-Configure your news-reading program to connect to port 3002 on your local machine. The secure tunnel created by ssh automatically communicates with the news server on news.yoyodyne.com, and the news traffic passing through the tunnel is protected by encryption.
+YouTube Video: https://www.youtube.com/watch?v=N8f5zv9UUMI
+
+### Local Port Forwarding Example
+
+<p align="center">
+  <img src="images/local_port_forwarding.png" style="max-width: 80%;">
+</p>
+
+**So if local machine can't access a port on remote server, ask remote server itself to take a forwarded request from client and hit that port and return back the response to client**
+
+```bash
+# syntax
+ssh -L local_port:destination_server_ip:remote_port ssh_server_hostname
+
+#like
+$ ssh -L 8080:192.168.0.2:80 red.server
+# OR
+$ ssh -L 8080:remote-host-name:80 red.server
+```
+This says “ssh, please establish a secure connection from TCP port 8080 on my local machine to TCP port 80, on red.server (via SSH Tunnel)”
+
+When ever a request is made on port 8080 on local machine, that request will be forwarded (via SSH) to remote host (red.server here) on port 80. On remote host this reqest will act like it is local to that remote host and get response accordingly (request will not be blocked like it is coming from some other host which is not localhost). And the response will be forwarded back (via SSH) to SSH client (Blue Server).
+
+Mostly used to access DB server on remote host that allow connections from localhost only.  
+
+### Remote Port Forwarding Example
+
+<p align="center">
+  <img src="images/remote_port_forwarding.png" style="max-width: 80%;">
+</p>
+
+**So if remote machine can't access a port on SSH client machine, ask client machine itself to take a forwarded request from remote host and hit that port and return back the response to remote host**
+
+```bash
+# syntax
+ssh -R remote_port:localhost:local_port ssh_server_hostname
+
+#like
+$ ssh -R 8080:localhost:80 user@gateway
+```
+
+Here if the remote server get a request from gateway on port 8080 to fetch some data from client server on port 80, then directly remote server can't access the port 80 of client server. It redirect request on SSH Tunnel and this forwarded request goes to client server (SSH port 22 default). and then hit the port 80 on client server and return the response (via SSH tunenl) back to remote server. 
 
 ## Firewalls
 A firewall is a hardware device or software program that prevents certain data from entering or exiting a network. For example, a firewall placed between a web site and the Internet might permit only HTTP and HTTPS traffic to reach the site. As another example, a firewall can reject all TCP/IP packets unless they originate from a designated set of network addresses.
