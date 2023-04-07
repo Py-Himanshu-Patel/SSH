@@ -162,12 +162,22 @@ ssh -L local_port:destination_server_ip:remote_port ssh_server_hostname
 $ ssh -L 8080:192.168.0.2:80 red.server
 # OR
 $ ssh -L 8080:remote-host-name:80 red.server
+# OR
+$ ssh -L 8080:localhost:80 red.server
 ```
 This says “ssh, please establish a secure connection from TCP port 8080 on my local machine to TCP port 80, on red.server (via SSH Tunnel)”
 
 When ever a request is made on port 8080 on local machine, that request will be forwarded (via SSH) to remote host (red.server here) on port 80. On remote host this reqest will act like it is local to that remote host and get response accordingly (request will not be blocked like it is coming from some other host which is not localhost). And the response will be forwarded back (via SSH) to SSH client (Blue Server).
 
 Mostly used to access DB server on remote host that allow connections from localhost only.  
+
+Config File
+```bash
+# Host local-forwarding-example
+HostName RemoteHostName
+    # local port remote-ip:remote-port
+    LocalForward 8080 localhost:80
+```
 
 ### Remote Port Forwarding Example
 
@@ -186,6 +196,30 @@ $ ssh -R 8080:localhost:80 user@gateway
 ```
 
 Here if the remote server get a request from gateway on port 8080 to fetch some data from client server on port 80, then directly remote server can't access the port 80 of client server. It redirect request on SSH Tunnel and this forwarded request goes to client server (SSH port 22 default). and then hit the port 80 on client server and return the response (via SSH tunenl) back to remote server. 
+
+Config File
+```bash
+# Host remote-forwarding-example
+HostName RemoteHostName
+    # remote-port localhost:local-port 
+    RemoteForward 8080 localhost:80
+```
+
+**Note**  
+For one connection port forwarding works fine but if multiple session are opened and each session read same config file of SSH. and attempt to make a connection with port forwareded then it get's an error: Port Already in Use. because remote host port is already binded to SSH port, A new connection will try to bind the already in use port again to SSH port. In such case make a new connection while ignoring port forwarding as
+```bash
+$ ssh -o ClearAllForwardings=yes hostname
+``` 
+
+### Local vs Remote Forwarding
+If the TCP client application (whose connections you want to for-
+ward) is running locally on the SSH client machine, use local for-
+warding. Otherwise, the client application is on the remote SSH
+server machine, and you use remote forwarding.
+
+**Note**: 
+- Socket is a pair of IP and Port. (IP,Port) 
+- “localhost” in command refer to other party. In Local Forward it means Remote and in Remote forwared it means Local.
 
 ## Firewalls
 A firewall is a hardware device or software program that prevents certain data from entering or exiting a network. For example, a firewall placed between a web site and the Internet might permit only HTTP and HTTPS traffic to reach the site. As another example, a firewall can reject all TCP/IP packets unless they originate from a designated set of network addresses.
